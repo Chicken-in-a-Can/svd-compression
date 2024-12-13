@@ -1,0 +1,2 @@
+#!/bin/bash
+mvn compile exec:java -Dexec.mainClass="com.chicken-in-a-can/App" -Dexec.args="cactus.jpg"
