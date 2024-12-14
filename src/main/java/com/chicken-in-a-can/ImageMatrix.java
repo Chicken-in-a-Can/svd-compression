@@ -4,9 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 public class ImageMatrix{
-    public int[][] img_matrix_red;
-    public int[][] img_matrix_green;
-    public int[][] img_matrix_blue;
+    public double[][] img_matrix_rgb;
 
     public ImageMatrix(String img_path){
         BufferedImage input_image;
@@ -20,12 +18,18 @@ public class ImageMatrix{
         int width = input_image.getWidth();
         int height = input_image.getHeight();
 
-        img_matrix_red = new int[width][height];
-        img_matrix_blue = new int[width][height];
-        img_matrix_green = new int[width][height];
+        int mat_width = width;
+        int mat_height = height;
+        if(width % 32 != 0){
+            mat_width += 32 - (width % 32);
+        }
+        if(height % 32 != 0){
+            mat_height += 32 - (height % 32);
+        }
+        img_matrix_rgb = new double[mat_width][mat_height];
 
         int row, col, argb;
-        int red, green, blue;
+        int rgb;
 
         for(int pixel = 0; pixel < width * height; pixel++){
 
@@ -34,13 +38,9 @@ public class ImageMatrix{
 
             argb = input_image.getRGB(col, row);
 
-            red = (argb >> 16) & 0xFF;
-            green = (argb >> 8) & 0xFF;
-            blue = (argb) & 0xFF;
+            rgb = argb & 0xFFFFFF;
 
-            img_matrix_red[row][col] = red;
-            img_matrix_green[row][col] = green;
-            img_matrix_blue[row][col] = blue;
+            img_matrix_rgb[col][row] = (double) rgb;
         }
     }
 }
