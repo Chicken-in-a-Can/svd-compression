@@ -1,3 +1,4 @@
 #!/bin/bash
-mvn compile exec:java -Dexec.mainClass="com.chicken-in-a-can/App" -Dexec.args="--compress cactus.jpg"
-mvn compile exec:java -Dexec.mainClass="com.chicken-in-a-can/App" -Dexec.args="--decompress cactus.jpg.svdc"
+mvn clean install assembly:single
+java -jar target/ImageCompression-1.0-SNAPSHOT-jar-with-dependencies.jar --compress cactus.jpg
+java -jar target/ImageCompression-1.0-SNAPSHOT-jar-with-dependencies.jar --decompress cactus.jpg.svdc
