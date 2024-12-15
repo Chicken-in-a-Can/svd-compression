@@ -8,6 +8,7 @@ public class App{
             String new_filename = args[1] + ".svdc";
             SVDio.saveCompressed(new_filename, img_compressed);
         } else if(args[0].equals("--decompress")){
+            float[] content = SVDio.readCompressed(args[1]);
 
         } else{
             System.err.println("Specify either `--compress` or `--decompress`");

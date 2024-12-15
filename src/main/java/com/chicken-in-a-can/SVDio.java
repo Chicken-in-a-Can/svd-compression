@@ -1,6 +1,8 @@
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Arrays;
 
 public class SVDio{
     public static void saveCompressed(String filename, SVDcompress img_compressed){
@@ -8,6 +10,7 @@ public class SVDio{
         File compressed_file = new File(filename);
         try(FileOutputStream file_out_stream = new FileOutputStream(compressed_file)){
             write_bytes = add_byte_arrays(write_bytes, to_bytes(img_compressed.original_dimensions));
+            System.out.println(Arrays.toString(img_compressed.original_dimensions));
             write_bytes = add_byte_arrays(write_bytes, to_bytes(img_compressed.u_compressed.length));
             write_bytes = add_byte_arrays(write_bytes, to_bytes(img_compressed.u_compressed[0].length));
 
@@ -55,10 +58,34 @@ public class SVDio{
         }
         
     }
-    public static int[] readCompressed(String filename){
-        int[] file_arr = new int[0];
+    public static float[] readCompressed(String filename){
+        float[] file_arr = new float[0];
+        
+        SVDdecompress svddecompress = new SVDdecompress();
 
+        try{
+            File compressed_file = new File(filename);
+            byte[] file_content = Files.readAllBytes(compressed_file.toPath());
+
+            System.out.println(read_int(file_content, 0));
+            System.out.println(read_int(file_content, 1));
+            System.out.println(read_int(file_content, 2));
+            System.out.println(read_int(file_content, 3));
+        }
+        catch(IOException e){
+            System.err.println("Could not read " + filename);
+        }
         return file_arr;
+    }
+
+    public static int read_int(byte[] array, int index){
+        int return_int = 0;
+        return_int += (array[index * 4] << 24);
+        return_int += (array[index * 4 + 1] << 16);
+        return_int += (array[index * 4 + 2] << 8);
+        return_int += (array[index * 4 + 3]);
+
+        return return_int;
     }
 
     public static byte[] to_bytes(int num){
