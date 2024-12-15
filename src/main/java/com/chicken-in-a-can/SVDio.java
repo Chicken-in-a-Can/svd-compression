@@ -1,5 +1,58 @@
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 public class SVDio{
-    public static void saveCompressed(String filename, int num_values, SVDcompress img_compressed){
+    public static void saveCompressed(String filename, SVDcompress img_compressed){
+        byte[] write_bytes = new byte[0];
+        File compressed_file = new File(filename);
+        try(FileOutputStream file_out_stream = new FileOutputStream(compressed_file)){
+            write_bytes = add_byte_arrays(write_bytes, to_bytes(img_compressed.original_dimensions));
+            write_bytes = add_byte_arrays(write_bytes, to_bytes(img_compressed.u_compressed.length));
+            write_bytes = add_byte_arrays(write_bytes, to_bytes(img_compressed.u_compressed[0].length));
+
+            System.out.println("Converting compressed U to bytes");
+            for(int i = 0; i < img_compressed.u_compressed.length; i++){
+                byte[] outer_temp_byte_arr = new byte[0];
+                for(int j = 0; j < img_compressed.u_compressed[i].length; j++){
+                    byte[] inner_temp_byte_arr = new byte[0];
+                    for(int k = 0; k < img_compressed.u_compressed[i][j].length; k++){
+                        inner_temp_byte_arr = add_byte_arrays(inner_temp_byte_arr, to_bytes(img_compressed.u_compressed[i][j][k]));
+                    }
+                    outer_temp_byte_arr = add_byte_arrays(outer_temp_byte_arr, inner_temp_byte_arr);
+                }
+                write_bytes = add_byte_arrays(write_bytes, outer_temp_byte_arr);
+            }
+
+            System.out.println("Converting compressed Sigma to bytes");
+            for(int i = 0; i < img_compressed.sigma_compressed.length; i++){
+                byte[] outer_temp_byte_arr = new byte[0];
+                for(int j = 0; j < img_compressed.sigma_compressed[i].length; j++){
+                    outer_temp_byte_arr = add_byte_arrays(outer_temp_byte_arr, to_bytes(img_compressed.sigma_compressed[i][j]));
+                }
+                write_bytes = add_byte_arrays(write_bytes, outer_temp_byte_arr);
+            }
+
+            System.out.println("Converting compressed V transpose to bytes");
+            for(int i = 0; i < img_compressed.vt_compressed.length; i++){
+                byte[] outer_temp_byte_arr = new byte[0];
+                for(int j = 0; j < img_compressed.vt_compressed[i].length; j++){
+                    byte[] inner_temp_byte_arr = new byte[0];
+                    for(int k = 0; k < img_compressed.vt_compressed[i][j].length; k++){
+                        inner_temp_byte_arr = add_byte_arrays(inner_temp_byte_arr, to_bytes(img_compressed.vt_compressed[i][j][k]));
+                    }
+                    outer_temp_byte_arr = add_byte_arrays(outer_temp_byte_arr, inner_temp_byte_arr);
+                }
+                write_bytes = add_byte_arrays(write_bytes, outer_temp_byte_arr);
+            }
+
+
+            System.out.println("Writing array to output file: " + filename);
+            file_out_stream.write(write_bytes);
+        } catch(IOException e){
+            System.err.println("Could not write to " + filename);
+            return;
+        }
         
     }
     public static int[] readCompressed(String filename){
@@ -23,7 +76,7 @@ public class SVDio{
         byte[] return_bytes = new byte[array.length * 4];
 
         for(int i = 0; i < array.length; i++){
-            byte[] chunk = to_bytes(i);
+            byte[] chunk = to_bytes(array[i]);
 
             return_bytes[i * 4] = chunk[0];
             return_bytes[i * 4 + 1] = chunk[1];
@@ -49,10 +102,35 @@ public class SVDio{
         byte[] return_bytes = new byte[array.length * 8];
 
         for(int i = 0; i < array.length; i++){
-            byte[] chunk = to_bytes(i);
+            byte[] chunk = to_bytes(array[i]);
 
             for(int j = 0; j < 8; j++){
                 return_bytes[8*i + j] = chunk[j];
+            }
+        }
+
+        return return_bytes;
+    }
+
+    public static byte[] to_bytes(float num){
+        byte[] return_bytes = new byte[4];
+
+        int byte_bits = Float.floatToIntBits(num);
+        for(int i = 0; i < 4; i++){
+            return_bytes[i] = (byte)((byte_bits >> ((3 - i) * 8)) & 0xFF);
+        }
+
+        return return_bytes;
+    }
+
+    public static byte[] to_bytes(float[] array){
+        byte[] return_bytes = new byte[array.length * 4];
+
+        for(int i = 0; i < array.length; i++){
+            byte[] chunk = to_bytes(array[i]);
+
+            for(int j = 0; j < 4; j++){
+                return_bytes[4*i + j] = chunk[j];
             }
         }
 

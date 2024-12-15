@@ -1,3 +1,3 @@
 #!/bin/bash
 mvn compile exec:java -Dexec.mainClass="com.chicken-in-a-can/App" -Dexec.args="--compress cactus.jpg"
-mvn compile exec:java -Dexec.mainClass="com.chicken-in-a-can/App" -Dexec.args="--decompress cactus.svdc"
+mvn compile exec:java -Dexec.mainClass="com.chicken-in-a-can/App" -Dexec.args="--decompress cactus.jpg.svdc"

@@ -6,26 +6,26 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 
 public class SVDcompress{
     public int[] original_dimensions = new int[2];
-    public double[][][][] u_compressed;
-    public double[][][] sigma_compressed;
-    public double[][][][] vt_compressed;
+    public float[][][][] u_compressed;
+    public float[][][] sigma_compressed;
+    public float[][][][] vt_compressed;
 
     public SVDcompress(ImageMatrix img_matrix){
         original_dimensions = img_matrix.original_dimensions;
         Array2DRowRealMatrix rgb_matrix;
         SingularValueDecomposition[][] rgb_decomp = new SingularValueDecomposition[img_matrix.img_matrix_rgb.length / 32][img_matrix.img_matrix_rgb[0].length / 32];
 
-        u_compressed = new double[img_matrix.img_matrix_rgb.length / 32][img_matrix.img_matrix_rgb[0].length / 32][32][8];
-        sigma_compressed = new double[img_matrix.img_matrix_rgb.length / 32][img_matrix.img_matrix_rgb[0].length / 32][32];
-        vt_compressed = new double[img_matrix.img_matrix_rgb.length / 32][img_matrix.img_matrix_rgb[0].length / 32][8][32];
+        u_compressed = new float[img_matrix.img_matrix_rgb.length / 32][img_matrix.img_matrix_rgb[0].length / 32][32][8];
+        sigma_compressed = new float[img_matrix.img_matrix_rgb.length / 32][img_matrix.img_matrix_rgb[0].length / 32][32];
+        vt_compressed = new float[img_matrix.img_matrix_rgb.length / 32][img_matrix.img_matrix_rgb[0].length / 32][8][32];
 
         for(int i = 0; i < rgb_decomp.length; i++){
             for(int j = 0; j < rgb_decomp[i].length; j++){
                 rgb_matrix = new Array2DRowRealMatrix(chunk(img_matrix.img_matrix_rgb, i, j, 32));
                 rgb_decomp[i][j] = new SingularValueDecomposition(rgb_matrix);
-                u_compressed[i][j] = transpose(Arrays.copyOfRange(transpose(rgb_decomp[i][j].getU().getData()), 0, 7));
-                sigma_compressed[i][j] = Arrays.copyOfRange(get_diagonal(rgb_decomp[i][j].getS().getData(), 32), 0, 8);
-                vt_compressed[i][j] = Arrays.copyOfRange(rgb_decomp[i][j].getVT().getData(), 0, 7);
+                u_compressed[i][j] = floaten(transpose(Arrays.copyOfRange(transpose(rgb_decomp[i][j].getU().getData()), 0, 7)));
+                sigma_compressed[i][j] = floaten(Arrays.copyOfRange(get_diagonal(rgb_decomp[i][j].getS().getData(), 32), 0, 8));
+                vt_compressed[i][j] = floaten(Arrays.copyOfRange(rgb_decomp[i][j].getVT().getData(), 0, 7));
             }
         }
     }
@@ -71,6 +71,26 @@ public class SVDcompress{
         }
 
         return return_array;
+    }
+
+    static float[] floaten(double[] arr){
+        float[] return_arr = new float[arr.length];
+
+        for(int i = 0; i < return_arr.length; i++){
+            return_arr[i] = (float) arr[i];
+        }
+
+        return return_arr;
+    }
+
+    static float[][] floaten(double[][] arr){
+        float[][] return_arr = new float[arr.length][arr[0].length];
+
+        for(int i = 0; i < return_arr.length; i++){
+            return_arr[i] = floaten(arr[i]);
+        }
+
+        return return_arr;
     }
 
 }
