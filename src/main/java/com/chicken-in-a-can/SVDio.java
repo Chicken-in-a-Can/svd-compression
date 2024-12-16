@@ -10,7 +10,6 @@ public class SVDio{
         File compressed_file = new File(filename);
         try(FileOutputStream file_out_stream = new FileOutputStream(compressed_file)){
             write_bytes = add_byte_arrays(write_bytes, to_bytes(img_compressed.original_dimensions));
-            System.out.println(Arrays.toString(img_compressed.original_dimensions));
             write_bytes = add_byte_arrays(write_bytes, to_bytes(img_compressed.u_compressed.length));
             write_bytes = add_byte_arrays(write_bytes, to_bytes(img_compressed.u_compressed[0].length));
 
@@ -61,16 +60,51 @@ public class SVDio{
     public static float[] readCompressed(String filename){
         float[] file_arr = new float[0];
         
-        SVDdecompress svddecompress = new SVDdecompress();
+        SVDdecompress svd_decompress = new SVDdecompress();
 
         try{
             File compressed_file = new File(filename);
             byte[] file_content = Files.readAllBytes(compressed_file.toPath());
 
-            System.out.println(read_int(file_content, 0));
-            System.out.println(read_int(file_content, 1));
-            System.out.println(read_int(file_content, 2));
-            System.out.println(read_int(file_content, 3));
+            int height = read_int(file_content, 0);
+            int width = read_int(file_content, 4);
+            int compressed_height = read_int(file_content, 8);
+            int compressed_width = read_int(file_content, 12);
+
+            svd_decompress.original_dimensions = new int[]{height, width};
+            svd_decompress.u_compressed = new float[compressed_height][compressed_width][32][8];
+            svd_decompress.sigma_compressed = new float[compressed_height][compressed_width][8];
+            svd_decompress.vt_compressed = new float[compressed_height][compressed_width][8][32];
+
+            int index = 16;
+            for(int i = 0; i < compressed_height; i++){
+                for(int j = 0; j < compressed_width; j++){
+                    for(int k = 0; k < 32; k++){
+                        for(int l = 0; l < 8; l++){
+                            svd_decompress.u_compressed[i][j][k][l] = read_float(file_content, index);
+                            index += 4;
+                        }
+                    }
+                }
+            }
+            for(int i = 0; i < compressed_height; i++){
+                for(int j = 0; j < compressed_width; j++){
+                    for(int k = 0; k < 8; k++){
+                        svd_decompress.sigma_compressed[i][j][k] = read_float(file_content, index);
+                        index += 4;
+                    }
+                }
+            }
+            for(int i = 0; i < compressed_height; i++){
+                for(int j = 0; j < compressed_width; j++){
+                    for(int k = 0; k < 8; k++){
+                        for(int l = 0; l < 32; l++){
+                            svd_decompress.vt_compressed[i][j][k][l] = read_float(file_content, index);
+                            index += 4;
+                        }
+                    }
+                }
+            }
         }
         catch(IOException e){
             System.err.println("Could not read " + filename);
@@ -80,12 +114,18 @@ public class SVDio{
 
     public static int read_int(byte[] array, int index){
         int return_int = 0;
-        return_int += (array[index * 4] << 24);
-        return_int += (array[index * 4 + 1] << 16);
-        return_int += (array[index * 4 + 2] << 8);
-        return_int += (array[index * 4 + 3]);
+        return_int |= ((array[index] & 0xFF) << 24);
+        return_int |= ((array[index + 1] & 0xFF) << 16);
+        return_int |= ((array[index + 2] & 0xFF) << 8);
+        return_int |= ((array[index + 3] & 0xFF));
 
         return return_int;
+    }
+
+    public static float read_float(byte[] array, int index){
+        float return_float = Float.intBitsToFloat(read_int(array, index));
+
+        return return_float;
     }
 
     public static byte[] to_bytes(int num){

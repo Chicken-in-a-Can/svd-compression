@@ -23,9 +23,9 @@ public class SVDcompress{
             for(int j = 0; j < rgb_decomp[i].length; j++){
                 rgb_matrix = new Array2DRowRealMatrix(chunk(img_matrix.img_matrix_rgb, i, j, 32));
                 rgb_decomp[i][j] = new SingularValueDecomposition(rgb_matrix);
-                u_compressed[i][j] = floaten(transpose(Arrays.copyOfRange(transpose(rgb_decomp[i][j].getU().getData()), 0, 7)));
+                u_compressed[i][j] = floaten(transpose(Arrays.copyOfRange(transpose(rgb_decomp[i][j].getU().getData()), 0, 8)));
                 sigma_compressed[i][j] = floaten(Arrays.copyOfRange(get_diagonal(rgb_decomp[i][j].getS().getData(), 32), 0, 8));
-                vt_compressed[i][j] = floaten(Arrays.copyOfRange(rgb_decomp[i][j].getVT().getData(), 0, 7));
+                vt_compressed[i][j] = floaten(Arrays.copyOfRange(rgb_decomp[i][j].getVT().getData(), 0, 8));
             }
         }
     }
